@@ -8,16 +8,16 @@ import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.Spy
 import org.mockito.junit.MockitoJUnit
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.quality.Strictness
 
-
+@RunWith(MockitoJUnitRunner.Silent::class)
 class WeatherForecastTest {
-    @get:Rule
-    val rule = MockitoJUnit.rule().strictness(Strictness.WARN) // WARNレベルでモックの使い方をチェック
     @Mock
     private lateinit var sattelite: Satellite
     @Mock
