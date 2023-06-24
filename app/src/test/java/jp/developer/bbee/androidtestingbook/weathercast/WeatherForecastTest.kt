@@ -6,13 +6,18 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.Spy
+import org.mockito.junit.MockitoJUnit
+import org.mockito.quality.Strictness
 
 
 class WeatherForecastTest {
+    @get:Rule
+    val rule = MockitoJUnit.rule().strictness(Strictness.WARN) // WARNレベルでモックの使い方をチェック
     @Mock
     private lateinit var sattelite: Satellite
     @Mock
@@ -24,7 +29,9 @@ class WeatherForecastTest {
 
     @Before
     fun setUp() {
+        /* Ruleで初期化するので不要
         MockitoAnnotations.initMocks(this)
+         */
         whenever(sattelite.getWeather(any(), any())).thenReturn(Weather.SUNNY)
         weatherForecast = WeatherForecast(sattelite, recorder, formatter)
     }
