@@ -1,21 +1,38 @@
 package jp.developer.bbee.androidtestingbook.weathercast
 
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.spy
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
+import org.assertj.core.api.Assertions.*
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.Spy
 
 
 class WeatherForecastTest {
+    @Mock
+    private lateinit var sattelite: Satellite
+    @Mock
+    private lateinit var recorder: WeatherRecorder
+    @Spy
+    val formatter: WeatherFormatter = WeatherFormatter() // spyは実インスタンスを指定する
+
     private lateinit var weatherForecast: WeatherForecast
-    private lateinit var formatter: WeatherFormatter
 
     @Before
     fun setUp() {
-        formatter = spy(WeatherFormatter()) // mockito による spy の作成
-        weatherForecast = WeatherForecast(formatter = formatter)
+        MockitoAnnotations.initMocks(this)
+        whenever(sattelite.getWeather(any(), any())).thenReturn(Weather.SUNNY)
+        weatherForecast = WeatherForecast(sattelite, recorder, formatter)
+    }
+
+    @Test
+    fun shouldBringUmbrella_WeatherSunny_ReturnsFalse() {
+        assertThat(weatherForecast.shouldBringUmbrella(37.580006, 139.239418))
+            .isFalse()
     }
 
     @Test
