@@ -2,6 +2,7 @@ package jp.developer.bbee.androidtestingbook.async
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 class AsyncStringFetcher(
     val fetcher: StringFetcher
@@ -11,8 +12,8 @@ class AsyncStringFetcher(
     fun fetchAsync(
         onSuccess: (value: String) -> Unit,
         onFailure: (error: Throwable) -> Unit
-    ) {
-        executor.submit {
+    ): Future<*> {
+        return executor.submit {
             try {
                 val value = fetcher.fetch()
                 onSuccess(value)
