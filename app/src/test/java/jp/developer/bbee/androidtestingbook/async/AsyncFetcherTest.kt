@@ -24,34 +24,7 @@ class AsyncFetcherTest {
         latch = CountDownLatch(1)
     }
 
-    /*
-    @Test
-    fun fetchAsync_expectFailButPass_01() {
-        asyncFetcher.fetchAsync(
-            onSuccess = { _ -> fail("onSuccess")},
-            onFailure = { _ -> fail("onFailure")}
-        ) // fail()を渡して失敗するようにしても非同期スレッドを待たずに終了するため成功する
-    }
-
-    @Test
-    fun fetchAsync_expectFailButPass_02() {
-        asyncFetcher.fetchAsync(
-            onSuccess = { _ -> fail("onSuccess")},
-            onFailure = { _ -> fail("onFailure")}
-        )
-        Thread.sleep(2000L) // 待ってもダメ
-    }
-
-    @Test(expected = RuntimeException::class)
-    fun fetchAsync_expectPassButFail() {
-        asyncFetcher.fetchAsync(
-            onSuccess = { _ -> throw RuntimeException("onSuccess") },
-            onFailure = { _ -> throw RuntimeException("onFailure") }
-        ) // RuntimeExceptionをthrowしても、非同期スレッドの例外を検知できないため失敗する
-        Thread.sleep(2000L)
-    }
-     */
-
+    /* コールバックの中でアサーションを行うのは避けたほうが良い
     @Test
     fun fetchAsync_callbackedProperly_onSuccess() {
         asyncFetcher.fetchAsync(
@@ -88,5 +61,43 @@ class AsyncFetcherTest {
         )
         println("fetchAsync invoked.")
         latch.await() // latchが0になるまで待つ
+    }
+     */
+
+    // ExecutorServiceの非同期処理は、Futureを使うことで、
+    // 非同期処理結果を待ち、テストスレッドで同期的に結果取得できる
+    @Test
+    fun fetchAsync_future_OK() {
+        var actualValue: String? = null
+        var actualError: Throwable? = null
+
+        asyncFetcher.fetchAsync(
+            onSuccess = { value -> actualValue = value },
+            onFailure = { error -> actualError = error }
+        ).get()
+
+        verify(fetcher, times(1)).fetch()
+        assertThat(actualValue).isEqualTo("foo")
+        assertThat(actualError).isNull()
+    }
+
+    @Test
+    fun fetchAsync_future_NG() {
+        // fetcher.fetch()が例外を投げるようにスタブを設定
+        doThrow(RuntimeException("ERROR")).whenever(fetcher).fetch()
+
+        var actualValue: String? = null
+        var actualError: Throwable? = null
+
+        asyncFetcher.fetchAsync(
+            onSuccess = { value -> actualValue = value },
+            onFailure = { error -> actualError = error }
+        ).get()
+
+        verify(fetcher, times(1)).fetch()
+        assertThat(actualValue).isNull()
+        assertThat(actualError)
+            .isInstanceOf(RuntimeException::class.java)
+            .hasMessageContaining("ERROR")
     }
 }
